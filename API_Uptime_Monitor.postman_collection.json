@@ -1,0 +1,389 @@
+{
+  "info": {
+    "_postman_id": "api-uptime-monitor-collection",
+    "name": "API Uptime Monitor",
+    "description": "Complete Postman collection for testing the API Uptime Monitor backend. Import this file into Postman, then set the `baseUrl` and `token` environment variables.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000", "type": "string" },
+    { "key": "token",   "value": "",                       "type": "string" },
+    { "key": "monitorId", "value": "1",                   "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "1. Register",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test User\",\n  \"email\": \"testuser@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/register", "host": ["{{baseUrl}}"], "path": ["api","auth","register"] }
+          },
+          "_postman_previewlanguage": "json",
+          "response": []
+        },
+        {
+          "name": "2. Login (returns JWT)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "console.log('Login response:', JSON.stringify(json));",
+                  "if (json.token) {",
+                  "  // Save to both scopes so it always works",
+                  "  pm.collectionVariables.set('token', json.token);",
+                  "  try { pm.environment.set('token', json.token); } catch(e) {}",
+                  "  try { pm.globals.set('token', json.token); } catch(e) {}",
+                  "  console.log('✅ Token saved! Length:', json.token.length);",
+                  "  pm.test('Login successful - token saved', () => pm.expect(json.token).to.be.a('string'));",
+                  "} else {",
+                  "  pm.test('Login FAILED - check email/password', () => pm.expect(json.token).to.exist);",
+                  "  console.log('❌ No token in response. Message:', json.message);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"testuser@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api","auth","login"] }
+          },
+          "_postman_previewlanguage": "json",
+          "response": []
+        },
+
+        {
+          "name": "3. Get Profile",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/auth/me", "host": ["{{baseUrl}}"], "path": ["api","auth","me"] }
+          },
+          "_postman_previewlanguage": "json",
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Monitors",
+      "item": [
+        {
+          "name": "Add Monitor — Valid URL ✅",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.monitor && json.monitor.id) {",
+                  "  pm.collectionVariables.set('monitorId', json.monitor.id);",
+                  "  console.log('monitorId saved:', json.monitor.id);",
+                  "}",
+                  "pm.test('Status is 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Has monitor ID', () => pm.expect(json.monitor.id).to.be.a('number'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Google\",\n  \"url\": \"https://google.com\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/monitors", "host": ["{{baseUrl}}"], "path": ["api","monitors"] }
+          },
+          "_postman_previewlanguage": "json",
+          "response": []
+        },
+        {
+          "name": "Add Monitor — Invalid URL ❌ (expect 400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400 for bad URL', () => pm.response.to.have.status(400));",
+                  "const json = pm.response.json();",
+                  "pm.test('success is false', () => pm.expect(json.success).to.be.false);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Bad URL\",\n  \"url\": \"not-a-url\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/monitors", "host": ["{{baseUrl}}"], "path": ["api","monitors"] }
+          },
+          "_postman_previewlanguage": "json",
+          "response": []
+        },
+        {
+          "name": "Add Monitor — Missing Name ❌ (expect 400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400 for missing name', () => pm.response.to.have.status(400));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"url\": \"https://google.com\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/monitors", "host": ["{{baseUrl}}"], "path": ["api","monitors"] }
+          },
+          "_postman_previewlanguage": "json",
+          "response": []
+        },
+        {
+          "name": "Add Monitor — No Auth ❌ (expect 401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 401 when unauthenticated', () => pm.response.to.have.status(401));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Google\",\n  \"url\": \"https://google.com\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/monitors", "host": ["{{baseUrl}}"], "path": ["api","monitors"] }
+          },
+          "_postman_previewlanguage": "json",
+          "response": []
+        },
+        {
+          "name": "Get All Monitors",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test('monitors is array', () => pm.expect(json.monitors).to.be.an('array'));",
+                  "pm.test('each monitor has uptime_percentage', () => {",
+                  "  json.monitors.forEach(m => pm.expect(m).to.have.property('uptime_percentage'));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/monitors", "host": ["{{baseUrl}}"], "path": ["api","monitors"] }
+          },
+          "_postman_previewlanguage": "json",
+          "response": []
+        },
+        {
+          "name": "Get Single Monitor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test('Has checks array', () => pm.expect(json.checks).to.be.an('array'));",
+                  "pm.test('Has incidents array', () => pm.expect(json.incidents).to.be.an('array'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/monitors/{{monitorId}}", "host": ["{{baseUrl}}"], "path": ["api","monitors","{{monitorId}}"] }
+          },
+          "_postman_previewlanguage": "json",
+          "response": []
+        },
+        {
+          "name": "Get Monitor — Wrong Owner ❌ (expect 404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 404 for wrong owner', () => pm.response.to.have.status(404));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/monitors/99999", "host": ["{{baseUrl}}"], "path": ["api","monitors","99999"] }
+          },
+          "_postman_previewlanguage": "json",
+          "response": []
+        },
+        {
+          "name": "Get Incident History",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test('Has incidents array', () => pm.expect(json.incidents).to.be.an('array'));",
+                  "pm.test('Has recent_checks array', () => pm.expect(json.recent_checks).to.be.an('array'));",
+                  "pm.test('Has total_incidents count', () => pm.expect(json).to.have.property('total_incidents'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/monitors/{{monitorId}}/history", "host": ["{{baseUrl}}"], "path": ["api","monitors","{{monitorId}}","history"] }
+          },
+          "_postman_previewlanguage": "json",
+          "response": []
+        },
+        {
+          "name": "Manual Ping Check",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test('Has checkResult', () => pm.expect(json).to.have.property('checkResult'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/monitors/{{monitorId}}/check", "host": ["{{baseUrl}}"], "path": ["api","monitors","{{monitorId}}","check"] }
+          },
+          "_postman_previewlanguage": "json",
+          "response": []
+        },
+        {
+          "name": "Pause Monitor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"is_active\": false\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/monitors/{{monitorId}}", "host": ["{{baseUrl}}"], "path": ["api","monitors","{{monitorId}}"] }
+          },
+          "_postman_previewlanguage": "json",
+          "response": []
+        },
+        {
+          "name": "Resume Monitor",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"is_active\": true\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/monitors/{{monitorId}}", "host": ["{{baseUrl}}"], "path": ["api","monitors","{{monitorId}}"] }
+          },
+          "_postman_previewlanguage": "json",
+          "response": []
+        },
+        {
+          "name": "Delete Monitor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/monitors/{{monitorId}}", "host": ["{{baseUrl}}"], "path": ["api","monitors","{{monitorId}}"] }
+          },
+          "_postman_previewlanguage": "json",
+          "response": []
+        }
+      ]
+    }
+  ]
+}

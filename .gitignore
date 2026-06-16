@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+
+# Environment secrets — NEVER commit this
+.env
+
+# SQLite local database
+*.sqlite
+*.sqlite3
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor directories
+.vscode/
+.idea/
+
+# Build output
+dist/
+build/

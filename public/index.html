@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Uptime Monitor — Portfolio Project</title>
+  <!-- Google Fonts - Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- CSS Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Background decorative glows -->
+  <div class="glow-bg">
+    <div class="glow-sphere glow-sphere-1"></div>
+    <div class="glow-sphere glow-sphere-2"></div>
+  </div>
+
+  <div class="app-container">
+    <!-- Navbar Header -->
+    <header class="main-header glass-panel">
+      <div class="logo-area" id="logo-click-area" style="cursor: pointer;">
+        <div class="logo-icon">
+          <i data-lucide="activity"></i>
+          <span class="logo-pulse"></span>
+        </div>
+        <div class="logo-text">
+          <h1>UptimePulse</h1>
+          <span class="badge badge-portfolio">CS Portfolio</span>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <!-- Theme Toggle -->
+        <button id="theme-toggle" class="btn btn-icon" title="Toggle Theme">
+          <i data-lucide="sun" class="icon-sun"></i>
+          <i data-lucide="moon" class="icon-moon"></i>
+        </button>
+        <!-- Logged In User Options -->
+        <div id="user-nav" class="user-nav hidden">
+          <span class="user-welcome">Hi, <strong id="username-display">User</strong></span>
+          <button id="btn-logout" class="btn btn-secondary">
+            <i data-lucide="log-out"></i> Logout
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- 0. Landing Page View -->
+    <main id="view-landing" class="view-landing">
+      <!-- Hero Section -->
+      <section class="landing-hero">
+        <h2>API & Endpoint Monitoring Made Simple</h2>
+        <p>Monitor availability, track HTTP response latency, and get instant email alerts when your services experience downtime. Engineered for developer peace of mind.</p>
+        <div class="landing-ctas">
+          <button id="btn-landing-get-started" class="btn btn-primary">
+            Get Started Free <i data-lucide="arrow-right"></i>
+          </button>
+          <button id="btn-landing-login" class="btn btn-secondary">
+            Sign In
+          </button>
+        </div>
+      </section>
+
+      <!-- Features Grid -->
+      <section class="landing-features">
+        <div class="feature-card glass-panel">
+          <div class="feature-icon"><i data-lucide="clock"></i></div>
+          <h3>5-Minute Pings</h3>
+          <p>Continuous background checks pinging your server endpoints to ensure round-the-clock availability.</p>
+        </div>
+        <div class="feature-card glass-panel">
+          <div class="feature-icon"><i data-lucide="mail"></i></div>
+          <h3>Email Alerting</h3>
+          <p>Instant alerts sent via Nodemailer when a monitor transitions from UP to DOWN or DOWN to UP.</p>
+        </div>
+        <div class="feature-card glass-panel">
+          <div class="feature-icon"><i data-lucide="trending-up"></i></div>
+          <h3>Performance Latency</h3>
+          <p>Track response times over time using beautiful interactive lines and average metric logs.</p>
+        </div>
+        <div class="feature-card glass-panel">
+          <div class="feature-icon"><i data-lucide="file-text"></i></div>
+          <h3>Incident Logs</h3>
+          <p>Audit trail recording every downtime episode, exact recovery intervals, and network failure responses.</p>
+        </div>
+      </section>
+      
+      <!-- Tech Stack Footer -->
+      <footer class="landing-footer glass-panel">
+        <div class="footer-content">
+          <h4>UptimePulse &bull; Portfolio Project</h4>
+          <p>Designed and built as a full-stack CS demonstration application using a robust backend pipeline.</p>
+          <div class="footer-tags">
+            <span class="badge">Node.js</span>
+            <span class="badge">Express.js</span>
+            <span class="badge">MySQL</span>
+            <span class="badge">SQLite</span>
+            <span class="badge">node-cron</span>
+            <span class="badge">Nodemailer</span>
+            <span class="badge">Vanilla CSS</span>
+          </div>
+          <p class="copyright-text">&copy; 2026 UptimePulse. No React, no Tailwind, pure core capabilities.</p>
+        </div>
+      </footer>
+    </main>
+
+    <!-- 1. Authentication View -->
+    <main id="view-auth" class="view-auth hidden">
+      <div class="auth-card glass-panel">
+        <div class="auth-header">
+          <h2 id="auth-title">Welcome Back</h2>
+          <p id="auth-subtitle">Login to monitor your API endpoints</p>
+        </div>
+        
+        <!-- Login Form -->
+        <form id="form-login" class="auth-form">
+          <div class="form-group">
+            <label for="login-email">Email Address</label>
+            <div class="input-wrapper">
+              <i data-lucide="mail"></i>
+              <input type="email" id="login-email" required placeholder="you@example.com">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="login-password">Password</label>
+            <div class="input-wrapper">
+              <i data-lucide="lock"></i>
+              <input type="password" id="login-password" required placeholder="••••••••">
+            </div>
+          </div>
+          <div id="login-error" class="alert alert-error hidden"></div>
+          <button type="submit" class="btn btn-primary btn-block">
+            Sign In <i data-lucide="arrow-right"></i>
+          </button>
+        </form>
+
+        <!-- Register Form (Hidden by default) -->
+        <form id="form-register" class="auth-form hidden">
+          <div class="form-group">
+            <label for="register-name">Full Name</label>
+            <div class="input-wrapper">
+              <i data-lucide="user"></i>
+              <input type="text" id="register-name" required placeholder="John Doe">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="register-email">Email Address</label>
+            <div class="input-wrapper">
+              <i data-lucide="mail"></i>
+              <input type="email" id="register-email" required placeholder="you@example.com">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="register-password">Password</label>
+            <div class="input-wrapper">
+              <i data-lucide="lock"></i>
+              <input type="password" id="register-password" required minlength="6" placeholder="Min 6 characters">
+            </div>
+          </div>
+          <div id="register-error" class="alert alert-error hidden"></div>
+          <button type="submit" class="btn btn-primary btn-block">
+            Create Account <i data-lucide="user-plus"></i>
+          </button>
+        </form>
+
+        <div class="auth-footer">
+          <p id="auth-toggle-text">Don't have an account? <a href="#" id="link-toggle-auth">Sign up</a></p>
+        </div>
+      </div>
+    </main>
+
+    <!-- 1b. Email Verification View -->
+    <main id="view-verify" class="view-verify hidden">
+      <div class="auth-card glass-panel">
+        <div class="auth-header">
+          <h2>🛡️ Verify Your Email</h2>
+          <p>We sent a 6-digit verification code to <strong id="verify-email-display" style="color: var(--primary);">your email</strong>. Please enter the code below to activate your account.</p>
+        </div>
+        
+        <form id="form-verify" class="auth-form">
+          <div class="form-group">
+            <label for="verify-code">Verification Code</label>
+            <div class="input-wrapper">
+              <i data-lucide="shield-check"></i>
+              <input type="text" id="verify-code" required maxlength="6" pattern="[0-9]{6}" placeholder="123456" style="text-align: center; letter-spacing: 0.35em; font-family: var(--font-mono); font-size: 20px;">
+            </div>
+            <small class="form-help">Enter the 6-digit code sent to your inbox.</small>
+          </div>
+          <div id="verify-error" class="alert alert-error hidden"></div>
+          <button type="submit" class="btn btn-primary btn-block">
+            Verify & Activate <i data-lucide="check-circle"></i>
+          </button>
+        </form>
+
+        <div class="verify-resend-area" style="margin-top: 24px; padding-top: 20px; border-top: 1px dashed var(--border-color);">
+          <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 8px;">Didn't receive the email?</p>
+          <button id="btn-resend-code" class="btn btn-secondary btn-block">
+            Resend Code <span id="resend-cooldown"></span>
+          </button>
+        </div>
+
+        <div class="auth-footer" style="margin-top: 20px;">
+          <a href="#" id="link-back-login"><i data-lucide="arrow-left" style="width: 14px; height: 14px; vertical-align: middle;"></i> Back to Sign In</a>
+        </div>
+      </div>
+    </main>
+
+    <!-- 2. Dashboard View -->
+    <main id="view-dashboard" class="view-dashboard hidden">
+      
+      <!-- Stats Summary cards -->
+      <section class="stats-grid">
+        <div class="stat-card glass-panel">
+          <div class="stat-icon stat-icon-blue"><i data-lucide="server"></i></div>
+          <div class="stat-details">
+            <span class="stat-label">Total Monitors</span>
+            <span class="stat-value" id="stat-total">0</span>
+          </div>
+        </div>
+        <div class="stat-card glass-panel">
+          <div class="stat-icon stat-icon-green"><i data-lucide="shield-check"></i></div>
+          <div class="stat-details">
+            <span class="stat-label">Online</span>
+            <span class="stat-value" id="stat-up">0</span>
+          </div>
+        </div>
+        <div class="stat-card glass-panel">
+          <div class="stat-icon stat-icon-red"><i data-lucide="shield-alert"></i></div>
+          <div class="stat-details">
+            <span class="stat-label">Offline</span>
+            <span class="stat-value" id="stat-down">0</span>
+          </div>
+        </div>
+        <div class="stat-card glass-panel">
+          <div class="stat-icon stat-icon-purple"><i data-lucide="percent"></i></div>
+          <div class="stat-details">
+            <span class="stat-label">Avg. Uptime</span>
+            <span class="stat-value" id="stat-uptime">100.00%</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Search and Controls -->
+      <section class="controls-bar glass-panel">
+        <div class="search-box">
+          <i data-lucide="search"></i>
+          <input type="text" id="search-monitors" placeholder="Filter monitors by name or URL...">
+        </div>
+        <div class="tab-selectors">
+          <button id="tab-btn-monitors" class="btn btn-tab active">
+            <i data-lucide="layout-grid"></i> Monitors
+          </button>
+          <button id="tab-btn-incidents" class="btn btn-tab">
+            <i data-lucide="history"></i> Incident History
+          </button>
+        </div>
+        <button id="btn-add-monitor" class="btn btn-primary">
+          <i data-lucide="plus"></i> Add Monitor
+        </button>
+      </section>
+
+      <!-- Tabs Contents -->
+      <div class="tab-content-container">
+        
+        <!-- Monitors List Tab -->
+        <div id="tab-monitors" class="tab-pane">
+          <div id="monitors-list" class="monitors-grid">
+            <!-- Dynamically populated via JS -->
+            <div class="loading-state">
+              <div class="spinner"></div>
+              <p>Fetching endpoints...</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Incidents Timeline Tab -->
+        <div id="tab-incidents" class="tab-pane hidden">
+          <div class="incidents-container glass-panel">
+            <h3>Incident History Logs</h3>
+            <div id="incidents-timeline" class="incidents-timeline">
+              <!-- Dynamically populated via JS -->
+              <p class="empty-state">No incidents logged yet.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Dashboard Footer -->
+      <footer class="dashboard-footer" style="margin-top: 40px; padding: 20px; text-align: center; border-top: 1px dashed var(--border-color); font-size: 12px; color: var(--text-muted);">
+        <p>&copy; 2026 UptimePulse &bull; Stack: Node, Express, SQLite/MySQL, node-cron, Nodemailer</p>
+      </footer>
+    </main>
+  </div>
+
+  <!-- MODAL: Add Monitor -->
+  <div id="modal-add" class="modal-overlay hidden">
+    <div class="modal-card glass-panel">
+      <div class="modal-header">
+        <h2>Add Endpoint Monitor</h2>
+        <button class="btn btn-icon btn-close-modal"><i data-lucide="x"></i></button>
+      </div>
+      <form id="form-add-monitor">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="monitor-name">Monitor Name</label>
+            <div class="input-wrapper">
+              <i data-lucide="tag"></i>
+              <input type="text" id="monitor-name" required placeholder="e.g. My REST API">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="monitor-url">Endpoint URL</label>
+            <div class="input-wrapper">
+              <i data-lucide="link-2"></i>
+              <input type="url" id="monitor-url" required placeholder="https://api.mywebsite.com/health">
+            </div>
+            <small class="form-help">Must start with http:// or https://</small>
+          </div>
+          <div id="add-monitor-error" class="alert alert-error hidden"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-close-modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Monitor</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: Monitor Details & Charts -->
+  <div id="modal-detail" class="modal-overlay hidden">
+    <div class="modal-card modal-card-large glass-panel">
+      <div class="modal-header">
+        <div class="detail-header-title">
+          <h2 id="detail-title">Monitor Details</h2>
+          <span id="detail-status-badge" class="badge">PENDING</span>
+        </div>
+        <button class="btn btn-icon btn-close-modal"><i data-lucide="x"></i></button>
+      </div>
+      
+      <div class="modal-body scrollable-body">
+        
+        <!-- Monitor Info and Edit -->
+        <div class="detail-info-grid">
+          <div>
+            <span class="info-label">URL</span>
+            <span class="info-value text-monospace" id="detail-url">https://example.com</span>
+          </div>
+          <div>
+            <span class="info-label">Uptime Ratio</span>
+            <span class="info-value" id="detail-uptime">100.00%</span>
+          </div>
+          <div>
+            <span class="info-label">Avg Latency</span>
+            <span class="info-value" id="detail-latency">0 ms</span>
+          </div>
+        </div>
+
+        <!-- Latency Chart -->
+        <div class="chart-container">
+          <h4>Response Latency (ms) — Last 50 Checks</h4>
+          <div class="canvas-wrapper">
+            <canvas id="latency-chart"></canvas>
+          </div>
+        </div>
+
+        <!-- Tabs inside Details (Checks vs Incidents) -->
+        <div class="detail-tabs">
+          <div class="detail-tab-headers">
+            <button id="det-tab-checks" class="detail-tab-btn active">Recent Checks</button>
+            <button id="det-tab-incidents" class="detail-tab-btn">Recent Downtimes</button>
+          </div>
+
+          <div class="detail-tab-content">
+            <!-- Checks Log Table -->
+            <div id="det-pane-checks" class="detail-pane">
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Status</th>
+                      <th>Response Time</th>
+                      <th>HTTP Code</th>
+                      <th>Checked At</th>
+                    </tr>
+                  </thead>
+                  <tbody id="checks-table-body">
+                    <!-- Loaded dynamically -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Incidents Table -->
+            <div id="det-pane-incidents" class="detail-pane hidden">
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Down Time</th>
+                      <th>Up Time</th>
+                      <th>Duration</th>
+                      <th>Error Reason</th>
+                    </tr>
+                  </thead>
+                  <tbody id="monitor-incidents-table-body">
+                    <!-- Loaded dynamically -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button id="btn-detail-check-now" class="btn btn-secondary">
+          <i data-lucide="refresh-cw"></i> Check Now
+        </button>
+        <button id="btn-detail-delete" class="btn btn-danger">
+          <i data-lucide="trash-2"></i> Delete Monitor
+        </button>
+        <button type="button" class="btn btn-primary btn-close-modal">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

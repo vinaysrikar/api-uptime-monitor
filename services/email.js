@@ -2,15 +2,14 @@ const nodemailer = require('nodemailer');
 
 // Create Transporter
 let transporter = null;
-const isMock = process.env.SMTP_USER === 'mock_user' || !process.env.SMTP_HOST;
+const isMock = process.env.SMTP_USER === 'mock_user' || !process.env.SMTP_USER;
 
 if (!isMock) {
   try {
-    const smtpPort = parseInt(process.env.SMTP_PORT || '2525', 10);
+    // Using the built-in 'gmail' service is more reliable on cloud providers
+    // and automatically handles the correct ports and TLS settings.
     transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: smtpPort,
-      secure: smtpPort === 465, // SSL/TLS secure mode for port 465
+      service: 'gmail',
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS
